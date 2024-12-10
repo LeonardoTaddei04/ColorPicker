@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Picker da una Immagine</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #canvas-container {
+            margin-top: 20px;
+            position: relative;
+            display: inline-block;
+        }
+        canvas {
+            border: 1px solid #000;
+        }
+        .color-display {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 18px;
+            color: white;
+            display: inline-block;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Carica un'immagine e seleziona un colore</h1>
+
+    <!-- Form per caricare l'immagine -->
+    <input type="file" id="imageUpload" accept="image/*">
+    
+    <!-- Contenitore per il canvas dove disegniamo l'immagine -->
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <!-- Display del colore selezionato -->
+    <div id="colorDisplay" class="color-display" style="background-color: #FFFFFF;">
+        Colore Selezionato: <span id="colorValue">#FFFFFF</span>
+    </div>
+
+    <script>
+        const imageUpload = document.getElementById('imageUpload');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const colorDisplay = document.getElementById('colorDisplay');
+        const colorValue = document.getElementById('colorValue');
+        let img = new Image();
+
+        // Funzione per caricare l'immagine
+        imageUpload.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    img.src = event.target.result;
+                    img.onload = function () {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Funzione per ottenere il colore dal click sulla canvas
+        canvas.addEventListener('click', function (e) {
+            const x = e.offsetX;
+            const y = e.offsetY;
+
+            // Ottieni i dati del pixel dove è stato cliccato
+            const pixel = ctx.getImageData(x, y, 1, 1);
+            const data = pixel.data;
+
+            // Converti i valori RGBA in formato Hex
+            const r = data[0];
+            const g = data[1];
+            const b = data[2];
+            const hex = rgbToHex(r, g, b);
+
+            // Mostra il colore selezionato e aggiorna il display
+            colorDisplay.style.backgroundColor = hex;
+            colorValue.textContent = hex;
+        });
+
+        // Funzione per convertire RGB in Hex
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1).toUpperCase();
+        }
+    </script>
+</body>
+</html>
